@@ -1,3 +1,4 @@
+data "aws_caller_identity" "this" {}
 module "this_label" {
   source     = "git::github.com/xoap-io/terraform-aws-misc-label?ref=v0.1.0"
   context    = var.context
@@ -7,6 +8,20 @@ module "this_label" {
 resource "aws_s3_bucket" "this" {
   bucket        = module.this_label.id
   force_destroy = true
+}
+resource "aws_s3_bucket_ownership_controls" "this" {
+  bucket = aws_s3_bucket.this.id
+
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+
+  # This `depends_on` is to prevent "A conflicting conditional operation is currently in progress against this resource."
+  depends_on = [
+    aws_s3_bucket_policy.this,
+    aws_s3_bucket_public_access_block.this,
+    aws_s3_bucket.this
+  ]
 }
 resource "aws_s3_bucket_public_access_block" "this" {
   bucket                  = aws_s3_bucket.this.id
@@ -23,6 +38,9 @@ resource "aws_s3_bucket_policy" "this" {
 resource "aws_s3_bucket_acl" "this" {
   bucket = aws_s3_bucket.this.id
   acl    = var.is_logging == true ? "log-delivery-write" : var.acl != "" ? var.acl : "private"
+  expected_bucket_owner = data.aws_caller_identity.this.account_id
+  depends_on = [aws_s3_bucket_ownership_controls.this]
+
 }
 resource "aws_s3_bucket_cors_configuration" "this" {
   count  = local.cors_enabled ? 1 : 0
