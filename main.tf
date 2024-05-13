@@ -36,10 +36,10 @@ resource "aws_s3_bucket_policy" "this" {
   policy = var.bucket_policy
 }
 resource "aws_s3_bucket_acl" "this" {
-  bucket = aws_s3_bucket.this.id
-  acl    = var.is_logging == true ? "log-delivery-write" : var.acl != "" ? var.acl : "private"
+  bucket                = aws_s3_bucket.this.id
+  acl                   = var.is_logging == true ? "log-delivery-write" : var.acl != "" ? var.acl : "private"
   expected_bucket_owner = data.aws_caller_identity.this.account_id
-  depends_on = [aws_s3_bucket_ownership_controls.this]
+  depends_on            = [aws_s3_bucket_ownership_controls.this]
 
 }
 resource "aws_s3_bucket_cors_configuration" "this" {
