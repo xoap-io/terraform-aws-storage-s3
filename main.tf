@@ -1,5 +1,5 @@
 module "this_label" {
-  source     = "git::github.com/xoap-io/terraform-aws-misc-label?ref=v0.1.0"
+  source     = "git::github.com/xoap-io/terraform-aws-misc-label?ref=v0.1.1"
   context    = var.context
   attributes = [var.name]
 }
